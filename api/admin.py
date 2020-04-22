@@ -9,6 +9,7 @@ from api.mail import send_mail
 from api.models import *
 from api.zoom import *
 from api.simpletime import *
+from easy_select2 import select2_modelform
 
 admin.site.site_title = 'Zoom 会议室管理'
 admin.site.site_header = 'Zoom 会议室管理'
@@ -22,7 +23,7 @@ class BasicSettingAdmin(ImportExportModelAdmin):
 
 @admin.register(Host)
 class HostAdmin(ImportExportModelAdmin):
-    list_display = ['account', 'name', 'password', 'host_type',
+    list_display = ['account', 'id', 'name', 'password', 'host_type',
                     'url', 'capacity', 'level', 'host_password', 'remark']
     save_as = True
 
@@ -34,9 +35,12 @@ def colour_is_or_no(status, zfc):
         return format_html('<span style="color:red">{}</span>', zfc)
 
 
+MeetingForm = select2_modelform(Meeting, attrs={'width': '300px'})
+
+
 @admin.register(Meeting)
 class MeetingAdmin(ImportExportModelAdmin):
-    list_display = ['id', 'color_topic', 'host', 'room_id', 'room_password', 'color_request_status',
+    list_display = ['color_topic', 'id', 'host', 'room_id', 'room_password', 'color_request_status',
                     'color_status', 'color_level', 'real_start_time', 'real_end_time', 'requester',
                     'people', 'color_is_mail_all', 'color_is_mail_success', 'color_room_is_delete',
                     'start_time', 'end_time'
@@ -44,7 +48,10 @@ class MeetingAdmin(ImportExportModelAdmin):
     exclude = ['real_start_time', 'real_end_time']
     actions = ['meeting_get_host', 'meeting_create', 'zf_room', 'send_mails']
     ordering = ['-real_start_time']
-    list_per_page = 15
+    search_fields = ['host__name', 'requester', 'topic', 'room_id']
+    list_filter = ['host__name', 'request_status', 'status', 'level', 'requester', 'start_time']
+    form = MeetingForm
+    list_per_page = 12
 
     def color_request_status(self, obj):
         # print(type(obj), obj)
@@ -94,19 +101,19 @@ class MeetingAdmin(ImportExportModelAdmin):
     def color_is_mail_all(self, obj):
         # print(type(obj), obj)
         return colour_is_or_no(obj.is_mail_all, obj.get_is_mail_all_display())
-    color_is_mail_all.short_description = "是否发送会议信息至参会人"
+    color_is_mail_all.short_description = "是否发送会议邮件至参会人"
     color_is_mail_all.admin_order_field = 'is_mail_all'
 
     def color_is_mail_success(self, obj):
         # print(type(obj), obj)
         return colour_is_or_no(obj.is_mail_success, obj.get_is_mail_success_display())
-    color_is_mail_success.short_description = "是否发送会议信息至参会人"
+    color_is_mail_success.short_description = "邮件是否发送成功"
     color_is_mail_success.admin_order_field = 'is_mail_success'
 
     def color_room_is_delete(self, obj):
         # print(type(obj), obj)
         return colour_is_or_no(obj.room_is_delete, obj.get_room_is_delete_display())
-    color_room_is_delete.short_description = "是否发送会议信息至参会人"
+    color_room_is_delete.short_description = "Room 是否被删除"
     color_room_is_delete.admin_order_field = 'room_is_delete'
 
     def meeting_get_host(self, request, queryset):
@@ -118,8 +125,6 @@ class MeetingAdmin(ImportExportModelAdmin):
             else:
                 messages.error(request, '会议：{}，获取主持人失败.'.format(meeting.topic))
     meeting_get_host.short_description = '获取主持人'
-
-
 
     def save_model(self, request, obj, form, change):
         bs = BasicSetting.objects.first()

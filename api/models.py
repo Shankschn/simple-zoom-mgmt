@@ -86,10 +86,10 @@ class Meeting(models.Model):
     level = models.IntegerField(choices=levels, default=0, verbose_name='会议级别',
                                 help_text=(
                                         '默认：一般会议。<br />' +
-                                        '一般会议：向主持人级别：0，发起会议申请；<br />' +
-                                        '重要会议：向主持人级别：0，1，发起会议申请；<br />' +
-                                        '特殊会议：向主持人级别：0，1，2，发起会议申请；<br />' +
-                                        '紧急会议：向主持人级别：0，1，2，3，发起会议申请；<br />'
+                                        '一般会议：向主持人级别：1，发起会议申请；<br />' +
+                                        '重要会议：向 主持人级别：1，2，发起会议申请；<br />' +
+                                        '特殊会议：向主持人级别：1，2，3，发起会议申请；<br />' +
+                                        '紧急会议：向主持人级别：1，2，3，4，发起会议申请；<br />'
                                     )
                                 )
     start_time = models.DateTimeField(null=True, verbose_name='开始时间')

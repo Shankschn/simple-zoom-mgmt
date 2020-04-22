@@ -76,7 +76,7 @@ def del_room(meeting, status):
 def get_host(meeting):
     hosts = Host.objects.filter(level__range=[1, meeting.level + 1], host_type=1)  # __lte 小于等于
     print('meeting', meeting)
-    ct_meetings = []
+    ct_meetings = ''
     # 申请人数 在范围外
     # print(type(meeting.people))
     print('meeting_people', meeting.people)
@@ -95,6 +95,7 @@ def get_host(meeting):
                     if m == meeting and meetings.count() == 1:
                         print('主持人当前没有会议, 返回主持人可主持会议。')
                         meeting.host = host
+                        meeting.ct_meetings = ''
                         meeting.request_status = 1
                         meeting.save()
                         return meeting
@@ -103,7 +104,8 @@ def get_host(meeting):
                         print('主持人：{}无空闲时间主持会议。'.format(host.name))
                         # print('没时间')
                         has_time.append(0)
-                        ct_meetings.append(m)
+                        meeting.host = None
+                        ct_meetings = ct_meetings + str(m.id) + ','
                     else:
                         has_time.append(1)
                 arr = np.array(has_time)
@@ -111,6 +113,7 @@ def get_host(meeting):
                     print('主持人：{}有空闲时间主持会议。'.format(host.name))
                     # print('有时间')
                     meeting.host = host
+                    meeting.ct_meetings = ''
                     meeting.request_status = 1
                     meeting.save()
                     return meeting
@@ -118,8 +121,10 @@ def get_host(meeting):
                 print('主持人：{}没有会议。'.format(host.name))
                 meeting.host = host
                 meeting.request_status = 1
+                meeting.ct_meetings = ''
                 meeting.save()
                 return meeting
+    meeting.host = None
     meeting.ct_meetings = ct_meetings
     meeting.request_status = 0
     meeting.save()
@@ -167,3 +172,14 @@ def create_room(meeting):
             meeting.room_password = temp['password']
             meeting.save()
     return meeting
+
+
+def room_id_get_meeting(room_id):
+    try:
+        meeting = Meeting.objects.get(room_id=room_id)
+    except Exception as e:
+        msg = '查找 room_id 时，报错：{}'.format(e)
+        print(msg)
+    else:
+        return meeting
+    return None

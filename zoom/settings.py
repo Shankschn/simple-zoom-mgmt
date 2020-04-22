@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'import_export',
     'api',
-    'django_crontab'
+    'django_crontab',
+    'easy_select2'
 ]
 
 MIDDLEWARE = [
@@ -85,10 +86,10 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',  # 或者使用 mysql.connector.django
-#         'NAME': 'zoom2',
-#         'USER': 'yudelei.com',
-#         'PASSWORD': 'zoom8ik,',
-#         'HOST': '119.27.166.87',
+#         'NAME': 'zoom',
+#         'USER': 'zoom',
+#         'PASSWORD': 'zoom,',
+#         'HOST': '127.0.0.1',
 #         'PORT': '3306',
 #     }
 # }

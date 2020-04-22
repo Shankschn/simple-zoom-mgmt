@@ -22,5 +22,4 @@ def post_sqhys():
     print(r.text)
 
 
-
 post_sqhys()

@@ -44,12 +44,15 @@ def get_body_end():
     所有设备在安装过程中有提示网络和权限问题，请一律点击允许Zoom使用权限。
 
 加入会议步骤：
+
   1.打开软件后，无需登陆，直接选择加入会议；
   2.第一行输入会议号，第二行输入姓名后，加入会议；
   3.如提示验证手机，请验证手机；
   4.输入会议密码；
   5.如果无法加入会议，请查看“安装Zoom”，下载最新客户端后重新加入会议。
+  
 加入后必须操作：
+
   1.激活扬声器（听见声音）：点击左下角的音频（麦克风/语音），会弹出选项,
     点击弹出选项中的“通过设备语音/互联网进行呼入/呼叫”；
   2.请根据情况打开/关闭，麦克风/视频（摄像头）：左下角有音频（语音），视频等开关。
@@ -103,12 +106,18 @@ def get_body_cg(meeting, is_special_email, bs):
 def get_ct_meetings_html(ct_meetings):
     temp_host = None
     html = '\n\t'
-    for ct in ct_meetings:
+    mts1 = ct_meetings.split(',')
+    mts2 = list(filter(None, mts1))
+    mts3 = list(map(int, mts2))
+    mts = mts3
+    print(mts)
+    meetings = Meeting.objects.filter(id__in=mts)
+    for ct in meetings:
         if ct.host != temp_host:
             html1 = '{} 已被占用时间：\n\t'.format(ct.host.name)
         else:
             html1 = ''
-        html2 = '{0}————{1} 至 {2}————{3}\n\t' \
+        html2 = '{0}——{1} 至 {2}——{3}\n\t' \
             .format(ct.topic, ct.real_start_time, ct.real_end_time, ct.requester)
         html = html + html1 + html2 + '\n\t'
         temp_host = ct.host
@@ -128,10 +137,11 @@ def get_body_sb0(meetings):
   参会人数：{7}
   
 一、如果必须在此时间段开会，请联系信息技术部查看备用会议室使用情况
-二、否则可在下方查看符合申请人数的 Zoom 会议室 已被占用的时间段，选择未被占用的时间段，再重新申请会议
-三、联系已申请会议的申请人，沟通更换会议时间
 
-系统判断冲突方式：以申请会议时间的开始时间提前 1 小时，结束时间延后 1 小时，再去判断会议是否冲突。
+二、否则可在下方查看符合申请人数的 Zoom 会议室 已被占用的时间段，选择未被占用的时间段，再重新申请会议
+  系统判断冲突方式：以申请会议时间，提前 1 小时与延后 1 小时后（请求会议时间），去判断会议是否冲突。
+  
+三、联系已申请会议的申请人，沟通更换会议时间
 
 {8}
     '''.format(meetings.requester, meetings.requester_email, meetings.topic,
@@ -156,11 +166,11 @@ def get_body_sb2(meeting):
 
 def get_body_qx(meeting):
     body = '''
-{2}<{3}}>:
-  Zoom 会议被作废，概要：
+{2}<{3}>:
+Zoom 会议概要：
     会议主题：{0}
     会 议 号：{1}
-    状    态：已作废
+    状  态：已作废
     '''.format(meeting.topic, meeting.room_id, meeting.requester, meeting.requester_email)
     return body
 
@@ -197,7 +207,7 @@ def send_mail(meeting):
     try:
         if meeting.request_status == 1:
             go = 1
-            if meeting.status == 2:
+            if (meeting.status == 2) or (meeting.status == 3):
                 go = 0
                 msg = MIMEMultipart()
                 msg['From'] = msg_from
