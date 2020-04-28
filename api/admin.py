@@ -133,8 +133,12 @@ class MeetingAdmin(ImportExportModelAdmin):
             # return
             print(bs.early_time)
             obj.real_start_time = obj.start_time - datetime.timedelta(hours=bs.early_time)
+        else:
+            obj.real_start_time = obj.start_time
         if obj.enable_delay_time == 1:
             obj.real_end_time = obj.end_time + datetime.timedelta(hours=bs.delay_time)
+        else:
+            obj.real_end_time = obj.end_time
         obj.save()
 
     def meeting_create(self, request, queryset):
